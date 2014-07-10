@@ -17,7 +17,7 @@ func main() {
 	app.Usage = "todo:"
 
 	app.Flags = []cli.Flag {
-		cli.BoolFlag{"gitlab.skip-cert-check", "If set to true, gitlab client will skip certificate checking for https, possibly exposing your system to MITM attack."},
+//		cli.BoolFlag{"gitlab.skip-cert-check", "If set to true, gitlab client will skip certificate checking for https, possibly exposing your system to MITM attack."},
 	}
 
 	app.Commands = []cli.Command{
@@ -26,28 +26,43 @@ func main() {
 			ShortName: "i",
 			Usage:     "project create issue",
 			Flags: []cli.Flag{
-//				cli.IntFlag{"project-id", 1, "projectId."},
+				cli.StringFlag{"t", "", "issue title."},
+				cli.StringFlag{"d", "", "issue description."},
 			},
-			Action: func(_ *cli.Context) {
+			Action: func(c *cli.Context) {
 
-				// TODO: local test server
-				res, err := http.PostForm("http://172.17.8.101:10080//api/v3/projects/1/issues?private_token=14K1ZR6QaH1yznNFWRtw", url.Values {
-					"id":           {"1"},
-					"title":        {"hogehoge"},
-					"description":  {"fuga"},
+				// TODO: 今いるディレクトリの.gitから検索したい
+				projectId := 1
+				// TODO: いい感じに保持したい
+				accessToken := "14K1ZR6QaH1yznNFWRtw"
+
+				PostIssue(projectId, accessToken, url.Values {
+//					"id":           {"1"},
+					"title":        {c.String("t")},
+					"description":  {c.String("d")},
 //					"assignee_id":  {"1"},
 //					"milestone_id": {"1"},
 //					"labels":       {"tag"},
 				})
-
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				fmt.Println(res)
 			},
 		},
 	}
 
 	app.Run(os.Args)
+}
+
+func PostIssue(projectId int, accessToken string, data url.Values) {
+	// TODO: local test server url
+	url := createUrl(projectId, accessToken)
+	res, err := http.PostForm(url, data)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(res)
+}
+func createUrl(projectId int, accessToken string) string {
+	domain := "http://172.17.8.101:10080/" + "api/v3/"
+	issue := fmt.Sprintf("projects/%d/issues/", projectId)
+	token := "?private_token=" + accessToken
+	return domain + issue + token
 }
