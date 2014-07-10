@@ -28,13 +28,13 @@ func main() {
 			Flags: []cli.Flag{
 				cli.StringFlag{"t", "", "issue title."},
 				cli.StringFlag{"d", "", "issue description."},
+				cli.StringFlag{"a", "ZDesNxuMt5jeCjJ9KSpH", "access token."},
 			},
 			Action: func(c *cli.Context) {
 
 				// TODO: 今いるディレクトリの.gitから検索したい
 				projectId := 1
-				// TODO: いい感じに保持したい
-				accessToken := "14K1ZR6QaH1yznNFWRtw"
+				accessToken := c.String("a")
 
 				PostIssue(projectId, accessToken, url.Values {
 //					"id":           {"1"},
