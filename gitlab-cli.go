@@ -3,10 +3,11 @@ package main
 import (
 	"github.com/codegangsta/cli"
 	"os"
-	"net/http"
 	"net/url"
 	"log"
 	"fmt"
+	"flag"
+	"github.com/kyokomi/go-gitlab-client/gogitlab"
 )
 
 func main() {
@@ -17,8 +18,10 @@ func main() {
 	app.Usage = "todo:"
 
 	app.Flags = []cli.Flag {
-//		cli.BoolFlag{"gitlab.skip-cert-check", "If set to true, gitlab client will skip certificate checking for https, possibly exposing your system to MITM attack."},
+		cli.BoolFlag{"gitlab.skip-cert-check", "If set to true, gitlab client will skip certificate checking for https, possibly exposing your system to MITM attack."},
 	}
+
+	flag.Parse()
 
 	app.Commands = []cli.Command{
 		{
@@ -26,17 +29,23 @@ func main() {
 			ShortName: "i",
 			Usage:     "project create issue",
 			Flags: []cli.Flag{
+				cli.IntFlag{"i", 1, "projectId."},
 				cli.StringFlag{"t", "", "issue title."},
 				cli.StringFlag{"d", "", "issue description."},
 				cli.StringFlag{"a", "ZDesNxuMt5jeCjJ9KSpH", "access token."},
+				cli.StringFlag{"u", "http://172.17.8.101:10080/", "url."},
 			},
 			Action: func(c *cli.Context) {
 
-				// TODO: 今いるディレクトリの.gitから検索したい
-				projectId := 1
+				domainUrl := c.String("u")
+				apiUrl := "api/v3/"
 				accessToken := c.String("a")
+				gitlab := gogitlab.NewGitlab(domainUrl, apiUrl, accessToken)
 
-				PostIssue(projectId, accessToken, url.Values {
+				// TODO: projectIdは今いるディレクトリの.gitから検索したい
+				projectId := c.Int("i")
+
+				PostIssue(gitlab, projectId, url.Values {
 //					"id":           {"1"},
 					"title":        {c.String("t")},
 					"description":  {c.String("d")},
@@ -51,18 +60,12 @@ func main() {
 	app.Run(os.Args)
 }
 
-func PostIssue(projectId int, accessToken string, data url.Values) {
-	// TODO: local test server url
-	url := createUrl(projectId, accessToken)
-	res, err := http.PostForm(url, data)
+func PostIssue(gitlab *gogitlab.Gitlab, projectId int, data url.Values) {
+	issue := fmt.Sprintf("projects/%d/issues/", projectId)
+	url := gitlab.ResourceUrl(issue, nil)
+	res, err := gitlab.Client.PostForm(url, data)
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println(res)
-}
-func createUrl(projectId int, accessToken string) string {
-	domain := "http://172.17.8.101:10080/" + "api/v3/"
-	issue := fmt.Sprintf("projects/%d/issues/", projectId)
-	token := "?private_token=" + accessToken
-	return domain + issue + token
 }
