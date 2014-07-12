@@ -72,14 +72,13 @@ func main() {
 }
 
 func GetCurrentDirProjectName() string {
-	fileData, err := ioutil.ReadFile("./.git/config")
+	data, err := ioutil.ReadFile("./.git/config")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	var projectName string
-	fileText := string(fileData)
-	for _, line := range strings.Split(fileText, "\n") {
+	for _, line := range strings.Split(string(data), "\n") {
 		if !strings.Contains(line, "url") {
 			continue
 		}
