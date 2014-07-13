@@ -25,18 +25,19 @@ func main() {
 			"If set to true, gitlab client will skip certificate checking for https, possibly exposing your system to MITM attack."},
 	}
 
-	gitlab := CreateGitlab(app.Name)
-
 	app.Commands = []cli.Command{
 		{
 			Name:      "create_issue",
 			ShortName: "i",
 			Usage:     "project create issue",
 			Flags: []cli.Flag{
-				cli.StringFlag{"t", "", "issue title."},
-				cli.StringFlag{"d", "", "issue description."},
+				cli.StringFlag{"title, t", "", "issue title."},
+				cli.StringFlag{"description, d", "", "issue description."},
+				cli.StringFlag{"label, l", "", "label example hoge,fuga,piyo."},
 			},
 			Action: func(c *cli.Context) {
+
+				gitlab := CreateGitlab(app.Name)
 
 				projectName := GetCurrentDirProjectName()
 				projectId := GetProjectId(gitlab, projectName)
@@ -47,7 +48,7 @@ func main() {
 					"description":  {c.String("d")},
 //					"assignee_id":  {"1"},
 //					"milestone_id": {"1"},
-//					"labels":       {"tag"},
+					"labels":       {c.String("l")},
 				})
 			},
 		},
