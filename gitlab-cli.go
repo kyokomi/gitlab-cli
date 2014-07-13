@@ -6,10 +6,11 @@ import (
 	"net/url"
 	"log"
 	"fmt"
-	"flag"
 	"github.com/kyokomi/go-gitlab-client/gogitlab"
 	"io/ioutil"
 	"strings"
+	"github.com/kyokomi/gitlab-cli/login"
+	"flag"
 )
 
 func main() {
@@ -24,7 +25,7 @@ func main() {
 			"If set to true, gitlab client will skip certificate checking for https, possibly exposing your system to MITM attack."},
 	}
 
-	flag.Parse()
+	gitlab := CreateGitlab(app.Name)
 
 	app.Commands = []cli.Command{
 		{
@@ -34,15 +35,8 @@ func main() {
 			Flags: []cli.Flag{
 				cli.StringFlag{"t", "", "issue title."},
 				cli.StringFlag{"d", "", "issue description."},
-				cli.StringFlag{"a", "ZDesNxuMt5jeCjJ9KSpH", "access token."},
-				cli.StringFlag{"u", "http://172.17.8.101:10080/", "url."},
 			},
 			Action: func(c *cli.Context) {
-
-				domainUrl := c.String("u")
-				apiUrl := "api/v3/"
-				accessToken := c.String("a")
-				gitlab := gogitlab.NewGitlab(domainUrl, apiUrl, accessToken)
 
 				projectName := GetCurrentDirProjectName()
 				projectId := GetProjectId(gitlab, projectName)
@@ -69,6 +63,15 @@ func main() {
 	}
 
 	app.Run(os.Args)
+}
+
+// Gitlabクライアントを作成する
+func CreateGitlab(appName string) *gogitlab.Gitlab {
+	config := login.ReadGitlabAccessTokenJson(appName)
+
+	flag.Parse()
+
+	return gogitlab.NewGitlab(config.Host, config.ApiPath, config.Token)
 }
 
 func GetCurrentDirProjectName() string {
@@ -119,6 +122,7 @@ func PostIssue(gitlab *gogitlab.Gitlab, projectId int, data url.Values) {
 
 	res, err := gitlab.Client.PostForm(url, data)
 	if err != nil {
+		fmt.Println(url)
 		log.Fatal(err)
 	}
 	fmt.Println(res)
