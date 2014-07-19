@@ -34,7 +34,7 @@ USAGE:
    gitlab-cli [global options] command [command options] [arguments...]
 
 VERSION:
-   0.0.1
+   0.0.2
 
 COMMANDS:
    create_issue, i  project create issue
