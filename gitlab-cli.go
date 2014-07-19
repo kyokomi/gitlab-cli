@@ -15,8 +15,13 @@ const (
 )
 
 // Gitlabクライアントを作成する
-func CreateGitlab(appName string) *gogitlab.Gitlab {
-	config := ReadGitlabAccessTokenJson(appName)
+func CreateGitlab() *gogitlab.Gitlab {
+	config, err := ReadFileGitlabAccessTokenJson()
+	if err != nil {
+		filePath := WriteFileDefaultConfig()
+		fmt.Println("write file default.", filePath)
+		return nil
+	}
 	flag.Parse()
 	return gogitlab.NewGitlab(config.Host, config.ApiPath, config.Token)
 }
@@ -49,22 +54,25 @@ func PostIssue(gitlab *gogitlab.Gitlab, projectId int, data url.Values) {
 
 func doCreateIssue(c *cli.Context) {
 
-	gitlab := CreateGitlab(c.App.Name)
+	gitlab := CreateGitlab()
+	if gitlab == nil {
+		return
+	}
 
 	projectName := GetCurrentDirProjectName()
 	projectId := GetProjectId(gitlab, projectName)
 
 	PostIssue(gitlab, projectId, url.Values {
-//		"id":           {"1"},
+			//		"id":           {"1"},
 		"title":        {c.String("t")},
 		"description":  {c.String("d")},
-//		"assignee_id":  {"1"},
-//		"milestone_id": {"1"},
+			//		"assignee_id":  {"1"},
+			//		"milestone_id": {"1"},
 		"labels":       {c.String("l")},
 	})
 }
 
-func doCheckProject(c *cli.Context) {
+func doCheckProject(_ *cli.Context) {
 	projectName := GetCurrentDirProjectName()
 	fmt.Println("projectName = ", projectName)
 }
@@ -72,8 +80,8 @@ func doCheckProject(c *cli.Context) {
 func main() {
 
 	app := cli.NewApp()
-	app.Version = "0.0.1"
-	app.Name = "gitlab-cli"
+	app.Version = Version
+	app.Name = AppName
 	app.Usage = "todo:"
 
 	app.Flags = []cli.Flag {
