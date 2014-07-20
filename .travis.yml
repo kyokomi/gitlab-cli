@@ -1,0 +1,19 @@
+language: go
+go: 1.3
+env: PATH=/home/travis/gopath/bin:$PATH
+install:
+- go get github.com/tools/godep
+- godep get
+- go get github.com/mitchellh/gox
+- gox -build-toolchain -osarch=darwin/amd64
+script: make
+deploy:
+  provider: releases
+  api_key:
+    secure: grlcQ5UQfW6XRwp8M4bFviCZWzc+EteQTeQ2ZohW6ZrfZWJOTuGAhys2tvoOeNq+k7OixaI/mHsy1oU6sHWxT1+pG7eSzO5C2VOVb0AQyG/rh+d9uEUq9hjHQtWaIH8/b1Gk1/Rq+tmsb+QNgKc6ffJfKhlploAE7mzA56A6VnQ=
+  file: 'gitlab-cli_darwin_amd64.zip'
+  skip_cleanup: true
+  all_branches: true  # https://github.com/travis-ci/travis-ci/issues/1675
+  on:
+    tags: true
+    repo: kyokomi/gitlab-cli

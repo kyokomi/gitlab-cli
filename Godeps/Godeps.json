@@ -1,0 +1,15 @@
+{
+	"ImportPath": "github.com/kyokomi/gitlab-cli",
+	"GoVersion": "go1.3",
+	"Deps": [
+		{
+			"ImportPath": "github.com/codegangsta/cli",
+			"Comment": "1.0.0-72-gbb91895",
+			"Rev": "bb9189510af1f49580c073c9e59e8bf288f0df27"
+		},
+		{
+			"ImportPath": "github.com/kyokomi/go-gitlab-client/gogitlab",
+			"Rev": "e5d49153356d32b86474e6c80134c4e5f4845fb0"
+		}
+	]
+}
