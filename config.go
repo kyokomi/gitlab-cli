@@ -1,18 +1,18 @@
 package main
 
 import (
-	"os/user"
-	"io/ioutil"
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"os"
+	"os/user"
 )
 
 // ${HOME}/.gitlab-cli/config.json
 type GitlabAccessConfig struct {
-	Host     string `json:"host"`
-	ApiPath  string `json:"api_path"`
-	Token    string `json:"token"`
+	Host    string `json:"host"`
+	ApiPath string `json:"api_path"`
+	Token   string `json:"token"`
 }
 
 type ReadConfigError struct {
@@ -21,7 +21,7 @@ type ReadConfigError struct {
 
 func (e *ReadConfigError) Error() string { return e.Err.Error() }
 
-// アクセストークンを保存してるローカルファイルを読み込んで返却
+// アクセストークンを保存してるローカルファイルを読み込んで返却する.
 func ReadFileGitlabAccessTokenJson() (config GitlabAccessConfig, err error) {
 	filePath, err := CreateConfigFilePath()
 	if err != nil {
@@ -36,24 +36,26 @@ func ReadFileGitlabAccessTokenJson() (config GitlabAccessConfig, err error) {
 	return
 }
 
+// ConfigFileのパスを作成して返却する.
 func CreateConfigFilePath() (filePath string, err error) {
 	usr, err := user.Current()
 	if err == nil {
-		filePath = usr.HomeDir+"/."+AppName+"/config.json"
+		filePath = usr.HomeDir + "/." + AppName + "/config.json"
 	}
 	return
 }
 
+// デフォルトのConfigFileを作成する.
 func WriteFileDefaultConfig() string {
 	filePath, err := CreateConfigFilePath()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	config := GitlabAccessConfig {
-		Host: "https://gitlab.com/",
+	config := GitlabAccessConfig{
+		Host:    "https://gitlab.com/",
 		ApiPath: "api/v3/",
-		Token: "aaaaaaaaaaaaaaaaaaaaaaa",
+		Token:   "aaaaaaaaaaaaaaaaaaaaaaa",
 	}
 
 	data, err := json.Marshal(config)

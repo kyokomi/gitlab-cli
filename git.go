@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// read Current dir gir project name.
 func GetCurrentDirProjectName() string {
 	data, err := ioutil.ReadFile("./.git/config")
 	if err != nil {
@@ -27,4 +28,3 @@ func GetCurrentDirProjectName() string {
 	}
 	return projectName
 }
-

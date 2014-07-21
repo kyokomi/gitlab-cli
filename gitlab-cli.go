@@ -1,20 +1,21 @@
 package main
 
 import (
-	"github.com/codegangsta/cli"
-	"os"
-	"net/url"
-	"log"
-	"fmt"
-	"github.com/kyokomi/go-gitlab-client/gogitlab"
 	"flag"
+	"fmt"
+	"log"
+	"net/url"
+	"os"
+
+	"github.com/codegangsta/cli"
+	"github.com/kyokomi/go-gitlab-client/gogitlab"
 )
 
 const (
 	ProjectIssueUrl = "projects/%d/issues/"
 )
 
-// Gitlabクライアントを作成する
+// Gitlabクライアントを作成する.
 func CreateGitlab() *gogitlab.Gitlab {
 	config, err := ReadFileGitlabAccessTokenJson()
 	if err != nil {
@@ -26,6 +27,7 @@ func CreateGitlab() *gogitlab.Gitlab {
 	return gogitlab.NewGitlab(config.Host, config.ApiPath, config.Token)
 }
 
+// 対象ProjectのProjectNameを取得する.
 func GetProjectId(gitlab *gogitlab.Gitlab, projectName string) int {
 	projects, err := gitlab.Projects()
 	if err != nil {
@@ -40,6 +42,7 @@ func GetProjectId(gitlab *gogitlab.Gitlab, projectName string) int {
 	return 0
 }
 
+// 対象Projectのissueを作成する.
 func PostIssue(gitlab *gogitlab.Gitlab, projectId int, data url.Values) {
 	issue := fmt.Sprintf(ProjectIssueUrl, projectId)
 	url := gitlab.ResourceUrl(issue, nil)
@@ -52,6 +55,7 @@ func PostIssue(gitlab *gogitlab.Gitlab, projectId int, data url.Values) {
 	fmt.Println(res)
 }
 
+// issue create task.
 func doCreateIssue(c *cli.Context) {
 
 	gitlab := CreateGitlab()
@@ -62,21 +66,23 @@ func doCreateIssue(c *cli.Context) {
 	projectName := GetCurrentDirProjectName()
 	projectId := GetProjectId(gitlab, projectName)
 
-	PostIssue(gitlab, projectId, url.Values {
-			//		"id":           {"1"},
-		"title":        {c.String("t")},
-		"description":  {c.String("d")},
-			//		"assignee_id":  {"1"},
-			//		"milestone_id": {"1"},
-		"labels":       {c.String("l")},
+	PostIssue(gitlab, projectId, url.Values{
+		//		"id":           {"1"},
+		"title":       {c.String("t")},
+		"description": {c.String("d")},
+		//		"assignee_id":  {"1"},
+		//		"milestone_id": {"1"},
+		"labels": {c.String("l")},
 	})
 }
 
+// project check task.
 func doCheckProject(_ *cli.Context) {
 	projectName := GetCurrentDirProjectName()
 	fmt.Println("projectName = ", projectName)
 }
 
+// main.
 func main() {
 
 	app := cli.NewApp()
@@ -84,7 +90,7 @@ func main() {
 	app.Name = AppName
 	app.Usage = "todo:"
 
-	app.Flags = []cli.Flag {
+	app.Flags = []cli.Flag{
 		cli.BoolFlag{"gitlab.skip-cert-check",
 			"If set to true, gitlab client will skip certificate checking for https, possibly exposing your system to MITM attack."},
 	}
@@ -105,7 +111,7 @@ func main() {
 			Name:      "check-project",
 			ShortName: "c",
 			Usage:     "check project name",
-			Action: doCheckProject,
+			Action:    doCheckProject,
 		},
 	}
 	app.Run(os.Args)
