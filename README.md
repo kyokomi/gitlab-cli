@@ -1,8 +1,9 @@
-gitlab-cli [![GoDoc](https://godoc.org/github.com/kyokomi/gitlab-cli?status.svg)](https://godoc.org/github.com/kyokomi/gitlab-cli)
+gitlab-cli 
 ==========
 
 [![wercker status](https://app.wercker.com/status/1530d18d0767226843232e2d62435a10/s "wercker status")](https://app.wercker.com/project/bykey/1530d18d0767226843232e2d62435a10)
 [![Build Status](https://travis-ci.org/kyokomi/gitlab-cli.svg?branch=v0.0.2.5)](https://travis-ci.org/kyokomi/gitlab-cli)
+[![GoDoc](https://godoc.org/github.com/kyokomi/gitlab-cli?status.svg)](https://godoc.org/github.com/kyokomi/gitlab-cli)
 
 gitlab command line tool golang
 

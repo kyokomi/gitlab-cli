@@ -17,10 +17,10 @@ const (
 
 // Gitlabクライアントを作成する.
 func CreateGitlab() *gogitlab.Gitlab {
-	config, err := ReadFileGitlabAccessTokenJson()
+	config, err := ReadGitlabAccessTokenJson()
 	if err != nil {
-		filePath := WriteFileDefaultConfig()
-		fmt.Println("write file default.", filePath)
+		_, err := WriteDefaultConfig()
+		fmt.Println("write file default. ", err)
 		return nil
 	}
 	flag.Parse()
@@ -92,7 +92,8 @@ func main() {
 
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{"gitlab.skip-cert-check",
-			"If set to true, gitlab client will skip certificate checking for https, possibly exposing your system to MITM attack."},
+			"If set to true, gitlab client will skip certificate checking for https, possibly exposing your system to MITM attack.",
+			"GITLAB.SKIP_CERT_CHECK"},
 	}
 
 	app.Commands = []cli.Command{
@@ -101,9 +102,9 @@ func main() {
 			ShortName: "i",
 			Usage:     "project create issue",
 			Flags: []cli.Flag{
-				cli.StringFlag{"title, t", "", "issue title."},
-				cli.StringFlag{"description, d", "", "issue description."},
-				cli.StringFlag{"label, l", "", "label example hoge,fuga,piyo."},
+				cli.StringFlag{"title, t", "", "issue title.", ""},
+				cli.StringFlag{"description, d", "", "issue description.", ""},
+				cli.StringFlag{"label, l", "", "label example hoge,fuga,piyo.", ""},
 			},
 			Action: doCreateIssue,
 		},
