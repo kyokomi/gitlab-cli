@@ -63,7 +63,11 @@ func doCreateIssue(c *cli.Context) {
 		return
 	}
 
-	projectName := GetCurrentDirProjectName()
+	projectName, err := GetCurrentDirProjectName()
+	if err == nil {
+		return
+	}
+
 	projectId := GetProjectId(gitlab, projectName)
 
 	PostIssue(gitlab, projectId, url.Values{
@@ -78,7 +82,10 @@ func doCreateIssue(c *cli.Context) {
 
 // project check task.
 func doCheckProject(_ *cli.Context) {
-	projectName := GetCurrentDirProjectName()
+	projectName, err := GetCurrentDirProjectName()
+	if err == nil {
+		log.Fatal(err)
+	}
 	fmt.Println("projectName = ", projectName)
 }
 

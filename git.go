@@ -2,15 +2,14 @@ package main
 
 import (
 	"io/ioutil"
-	"log"
 	"strings"
 )
 
 // read Current dir gir project name.
-func GetCurrentDirProjectName() string {
+func GetCurrentDirProjectName() (string, error) {
 	data, err := ioutil.ReadFile("./.git/config")
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
 	var projectName string
@@ -21,10 +20,8 @@ func GetCurrentDirProjectName() string {
 
 		// replace projectName
 		idx := strings.LastIndex(line, "/")
-		projectName = strings.TrimLeft(line, line[0:idx])
-		projectName = strings.Replace(projectName, "/", "", 1)
-		projectName = strings.Replace(projectName, ".git", "", 1)
+		projectName = strings.Replace(line[idx+1:], ".git", "", 1)
 		break
 	}
-	return projectName
+	return projectName, nil
 }
