@@ -16,59 +16,75 @@ const (
 )
 
 // Gitlabクライアントを作成する.
-func CreateGitlab() *gogitlab.Gitlab {
+func CreateGitlab() (*gogitlab.Gitlab, error) {
 	config, err := ReadGitlabAccessTokenJson()
 	if err != nil {
 		_, err := WriteDefaultConfig()
 		fmt.Println("write file default. ", err)
-		return nil
+		return nil, err
 	}
 	flag.Parse()
-	return gogitlab.NewGitlab(config.Host, config.ApiPath, config.Token)
-}
-
-// 対象ProjectのProjectNameを取得する.
-func GetProjectId(gitlab *gogitlab.Gitlab, projectName string) int {
-	projects, err := gitlab.Projects()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	for _, project := range projects {
-		if project.Name == projectName {
-			return project.Id
-		}
-	}
-	return 0
+	return gogitlab.NewGitlab(config.Host, config.ApiPath, config.Token), nil
 }
 
 // 対象Projectのissueを作成する.
-func PostIssue(gitlab *gogitlab.Gitlab, projectId int, data url.Values) {
+func PostIssue(gitlab *gogitlab.Gitlab, projectId int, data url.Values) error {
 	issue := fmt.Sprintf(ProjectIssueUrl, projectId)
 	url := gitlab.ResourceUrl(issue, nil)
 
 	res, err := gitlab.Client.PostForm(url, data)
 	if err != nil {
 		fmt.Println(url)
-		log.Fatal(err)
+		return err
 	}
 	fmt.Println(res)
+
+	return nil
+}
+
+func ShowIssue(gitlab *gogitlab.Gitlab, projectId int, showDetail bool) {
+	page := 1
+	for {
+		issues, err := gitlab.ProjectIssues(projectId, page)
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+		if len(issues) == 0 {
+			break
+		}
+
+		for _, issue := range issues {
+
+			if issue.State != "closed" {
+				if showDetail {
+					fmt.Printf("[%4d(%d)] %s : [%s] (%s)\n%s\n", issue.Id, issue.LocalId, issue.State, issue.Title, issue.Assignee.Name, issue.Description)
+				} else {
+					fmt.Printf("[%4d(%d)] %s : [%s] (%s)\n", issue.Id, issue.LocalId, issue.State, issue.Title, issue.Assignee.Name)
+				}
+			}
+		}
+		page++
+	}
 }
 
 // issue create task.
 func doCreateIssue(c *cli.Context) {
 
-	gitlab := CreateGitlab()
-	if gitlab == nil {
-		return
+	gitlab, err := CreateGitlab()
+	if err != nil {
+		log.Fatal("error create gitlab ")
 	}
 
 	projectName, err := GetCurrentDirProjectName()
-	if err == nil {
-		return
+	if err != nil {
+		log.Fatal("not gitlab projectName ", err)
 	}
 
-	projectId := GetProjectId(gitlab, projectName)
+	projectId, err := GetProjectId(gitlab, projectName)
+	if err != nil {
+		log.Fatal("not gitlab projectId ", err)
+	}
 
 	PostIssue(gitlab, projectId, url.Values{
 		//		"id":           {"1"},
@@ -83,10 +99,29 @@ func doCreateIssue(c *cli.Context) {
 // project check task.
 func doCheckProject(_ *cli.Context) {
 	projectName, err := GetCurrentDirProjectName()
-	if err == nil {
-		log.Fatal(err)
+	if err != nil {
+		log.Fatal("not gitlab projectName ", err)
 	}
 	fmt.Println("projectName = ", projectName)
+}
+
+func doShowIssue(c *cli.Context) {
+	gitlab, err := CreateGitlab()
+	if err != nil {
+		log.Fatal("error create gitlab ")
+	}
+
+	projectName, err := GetCurrentDirProjectName()
+	if err != nil {
+		log.Fatal("not gitlab projectName ", err)
+	}
+
+	projectId, err := GetProjectId(gitlab, projectName)
+	if err != nil {
+		log.Fatal("not gitlab projectId ", err)
+	}
+
+	ShowIssue(gitlab, projectId, c.Bool("detail"))
 }
 
 // main.
@@ -120,6 +155,15 @@ func main() {
 			ShortName: "c",
 			Usage:     "check project name",
 			Action:    doCheckProject,
+		},
+		{
+			Name:      "list-issue",
+			ShortName: "l",
+			Usage:     "list project issue",
+			Action:    doShowIssue,
+			Flags: []cli.Flag{
+				cli.BoolFlag{"detail, d", "show/hide issue detail.", ""},
+			},
 		},
 	}
 	app.Run(os.Args)

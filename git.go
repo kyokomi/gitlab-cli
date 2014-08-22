@@ -23,5 +23,6 @@ func GetCurrentDirProjectName() (string, error) {
 		projectName = strings.Replace(line[idx+1:], ".git", "", 1)
 		break
 	}
+
 	return projectName, nil
 }
