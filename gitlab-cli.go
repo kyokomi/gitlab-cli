@@ -124,6 +124,22 @@ func doShowIssue(c *cli.Context) {
 	ShowIssue(gitlab, projectId, c.Bool("detail"))
 }
 
+func doInitConfig(c *cli.Context) {
+
+	hostName := c.String("host")
+	apiPath := c.String("api-path")
+	token := c.String("token")
+
+	config := GitlabAccessConfig{
+		Host:    hostName,
+		ApiPath: apiPath,
+		Token:   token,
+	}
+	if err := WriteAppConfig(c.App.Name, &config); err != nil {
+		log.Fatal("appConfig write error ", err)
+	}
+}
+
 // main.
 func main() {
 
@@ -163,6 +179,17 @@ func main() {
 			Action:    doShowIssue,
 			Flags: []cli.Flag{
 				cli.BoolFlag{"detail, d", "show/hide issue detail.", ""},
+			},
+		},
+		{
+			Name:      "init-config",
+			ShortName: "init",
+			Usage:     "initialize to config",
+			Action:    doInitConfig,
+			Flags: []cli.Flag{
+				cli.StringFlag{"host", "https://gitlab.com/", "host name example [https://gitlab.com/]", ""},
+				cli.StringFlag{"api-path", "api/v3/", "api path example [api/v3/]", ""},
+				cli.StringFlag{"token", "", "your access token", ""},
 			},
 		},
 	}

@@ -6,6 +6,8 @@ import (
 	"os"
 	"os/user"
 	"strings"
+
+	"github.com/kyokomi/appConfig"
 )
 
 const configFileName = "config.json"
@@ -105,4 +107,15 @@ func WriteFileDefaultConfig(filePath string) (GitlabAccessConfig, error) {
 	}
 
 	return defaultConfig, nil
+}
+
+//////////////////////
+
+func WriteAppConfig(appName string, config *GitlabAccessConfig) error {
+	a := appConfig.NewAppConfig(appName, "config.json")
+	data, err := json.Marshal(config)
+	if err != nil {
+		return err
+	}
+	return a.WriteAppConfig(data)
 }

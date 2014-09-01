@@ -12,58 +12,28 @@ gitlab command line tool golang
 ```
 $ go get git@github.com:kyokomi/gitlab-cli.git
 ```
-
-## Setup ##
-
-### config.json Sample
-
-`$HOME/.gitlab-cli/config.json`
-
-```
-{
-  "host":     "https://gitlab.com/",
-  "api_path": "api/v3/",
-  "token":    "aaaaaaaaaaaaaaaaaaaaaaa"
-}
-```
-
 ## Usage ##
 
+### Init Config
+
 ```
-$ gitlab-cli --help
-NAME:
-   gitlab-cli - todo:
+$ gitlab-cli init --host https://gitlab.com/ --api-path api/v3/ --token aaaaaaaaaaa
+```
 
-USAGE:
-   gitlab-cli [global options] command [command options] [arguments...]
+- `--host`: gitlab host url
+- `--api-path`: gitlab api version path
+- `--token`: your access token
 
-VERSION:
-   0.0.2
+### Issue List
 
-COMMANDS:
-   create_issue, i  project create issue
-   check-project, c check project name
-   help, h      Shows a list of commands or help for one command
+#### Target Gitlab Issues
+![/gitlab.png](https://dl.dropbox.com/u/49084962/gitlab.png)
 
-GLOBAL OPTIONS:
-   --gitlab.skip-cert-check If set to true, gitlab client will skip certificate checking for https, possibly exposing your system to MITM attack.
-   --version, -v        print the version
-   --help, -h           show help
-
-$ gitlab-cli i --help
-NAME:
-   create_issue - project create issue
-
-USAGE:
-   command create_issue [command options] [arguments...]
-
-DESCRIPTION:
-
-
-OPTIONS:
-   --title, -t      issue title.
-   --description, -d    issue description.
-   --label, -l      label example hoge,fuga,piyo.
+```
+$ gitlab-cli l
+[56091(22)] opened : [hgoe] (kyokomi)
+[56090(21)] opened : [hgoe] ()
+[53679(18)] opened : [たいとるだよー] (kyokomi)
 ```
 
 ### Create Issue
@@ -72,7 +42,15 @@ OPTIONS:
 $ gitlab-cli i -t title -d hoge -l aaa,bbbb,hoge,tag
 ```
 
+- `-t`: issue title
+- `-d`: issue detail
+- `-l`: issue labels (カンマ区切りで複数可)
+
 ## LICENSE
 
 MIT
+
+## Author
+
+[kyokomi](https://github.com/kyokomi)
 
