@@ -30,25 +30,28 @@ $ gitlab-cli init --host https://gitlab.com/ --api-path api/v3/ --token aaaaaaaa
 ![/gitlab.png](https://dl.dropbox.com/u/49084962/gitlab.png)
 
 ```
-$ gitlab-cli l
-[56091(22)] opened : [hgoe] (kyokomi)
-[56090(21)] opened : [hgoe] ()
-[53679(18)] opened : [たいとるだよー] (kyokomi)
+$ gitlab-cli list
 ```
 
 ### Create Issue
 
 ```
-$ gitlab-cli i -t title -d hoge -l aaa,bbbb,hoge,tag
+$ gitlab-cli add -t title -d hoge -l aaa,bbbb,hoge,tag
 ```
 
 - `-t`: issue title
 - `-d`: issue detail
 - `-l`: issue labels (カンマ区切りで複数可)
 
+## Demo
+
+### Issues List
+
+![/gitlab-cli_demo_issue-list.png](https://dl.dropbox.com/u/49084962/gitlab-cli_demo_issue-list.png)
+
 ## LICENSE
 
-MIT
+[MIT](https://github.com/kyokomi/gitlab-cli/blob/master/LICENSE)
 
 ## Author
 

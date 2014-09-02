@@ -6,9 +6,11 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"unicode/utf8"
 
 	"github.com/codegangsta/cli"
 	"github.com/kyokomi/go-gitlab-client/gogitlab"
+	"github.com/mitchellh/colorstring"
 )
 
 const (
@@ -34,7 +36,6 @@ func PostIssue(gitlab *gogitlab.Gitlab, projectId int, data url.Values) error {
 
 	res, err := gitlab.Client.PostForm(url, data)
 	if err != nil {
-		fmt.Println(url)
 		return err
 	}
 	fmt.Println(res)
@@ -42,15 +43,25 @@ func PostIssue(gitlab *gogitlab.Gitlab, projectId int, data url.Values) error {
 	return nil
 }
 
-func ShowIssue(gitlab *gogitlab.Gitlab, projectId int, showDetail bool) {
-	page := 1
-	for {
-		issues, err := gitlab.ProjectIssues(projectId, page)
-		if err != nil {
-			fmt.Println(err)
-			break
+func ShowIssue(gitlab *gogitlab.Gitlab, projectId int) {
+	c := make(chan []*gogitlab.Issue)
+	go func(s chan <- []*gogitlab.Issue) {
+		page := 1
+		for {
+			issues, err := gitlab.ProjectIssues(projectId, page)
+			if err != nil || len(issues) == 0 {
+				break
+			}
+			page++
+
+			s <- issues
 		}
-		if len(issues) == 0 {
+		close(s)
+	}(c)
+
+	for {
+		issues, ok := <- c
+		if !ok {
 			break
 		}
 
@@ -66,7 +77,6 @@ func ShowIssue(gitlab *gogitlab.Gitlab, projectId int, showDetail bool) {
 				issue.CreatedAt,
 				issue.UpdatedAt)))
 		}
-		page++
 	}
 }
 
