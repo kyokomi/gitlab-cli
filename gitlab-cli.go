@@ -55,14 +55,16 @@ func ShowIssue(gitlab *gogitlab.Gitlab, projectId int, showDetail bool) {
 		}
 
 		for _, issue := range issues {
-
-			if issue.State != "closed" {
-				if showDetail {
-					fmt.Printf("[%4d(%d)] %s : [%s] (%s)\n%s\n", issue.Id, issue.LocalId, issue.State, issue.Title, issue.Assignee.Name, issue.Description)
-				} else {
-					fmt.Printf("[%4d(%d)] %s : [%s] (%s)\n", issue.Id, issue.LocalId, issue.State, issue.Title, issue.Assignee.Name)
-				}
-			}
+			titleCount := 50 + ((utf8.RuneCountInString(issue.Title) - len(issue.Title)) / 2)
+			nameCount := 30 + ((utf8.RuneCountInString(issue.Assignee.Name) - len(issue.Assignee.Name)) / 2)
+			t := fmt.Sprintf("[blue]#%%-4d %%-7s [white]%%-%ds [green]%%-%ds [white]%%-33s / %%-33s", titleCount, nameCount)
+			fmt.Println(colorstring.Color(fmt.Sprintf(t,
+				issue.LocalId,
+				issue.State,
+				issue.Title,
+				issue.Assignee.Name,
+				issue.CreatedAt,
+				issue.UpdatedAt)))
 		}
 		page++
 	}
