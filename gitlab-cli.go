@@ -15,12 +15,12 @@ const (
 	ProjectIssueUrl = "projects/%d/issues/"
 )
 
+var gitlabAppConfig *GitlabCliAppConfig
+
 // Gitlabクライアントを作成する.
 func CreateGitlab() (*gogitlab.Gitlab, error) {
-	config, err := ReadGitlabAccessTokenJson()
+	config, err := gitlabAppConfig.ReadGitlabAccessTokenJson()
 	if err != nil {
-		_, err := WriteDefaultConfig()
-		fmt.Println("write file default. ", err)
 		return nil, err
 	}
 	flag.Parse()
@@ -135,7 +135,7 @@ func doInitConfig(c *cli.Context) {
 		ApiPath: apiPath,
 		Token:   token,
 	}
-	if err := WriteAppConfig(c.App.Name, &config); err != nil {
+	if err := gitlabAppConfig.WriteGitlabAccessConfig(&config); err != nil {
 		log.Fatal("appConfig write error ", err)
 	}
 }
@@ -153,6 +153,8 @@ func main() {
 			"If set to true, gitlab client will skip certificate checking for https, possibly exposing your system to MITM attack.",
 			"GITLAB.SKIP_CERT_CHECK"},
 	}
+
+	gitlabAppConfig = NewGitlabCliAppConfig(AppName)
 
 	app.Commands = []cli.Command{
 		{

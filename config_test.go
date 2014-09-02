@@ -3,56 +3,49 @@ package main
 import (
 	"os"
 	"testing"
+	"strings"
+	"fmt"
 )
 
-func TestCreateConfigFilePath(t *testing.T) {
-	filePath := createConfigFilePath("_test")
-	if filePath != "_test/.gitlab-cli/config.json" {
-		t.Error("filePath error")
-	}
+var testDir string
+
+func init() {
+	currentDir, _ := os.Getwd()
+	testDir = strings.Join([]string{currentDir, "_test"}, "/")
+
+	os.MkdirAll(testDir, os.FileMode(0755))
+
+	fmt.Println("init complete")
 }
 
 func TestReadFileGitlabAccessTokenJson(t *testing.T) {
 
-	currentDir, err := os.Getwd()
-	if err != nil {
+	// test用にConfigディレクトリを変更
+	ac := NewGitlabCliAppConfig("test")
+	ac.ConfigDirPath = testDir
+
+	// テスト前に削除
+	if err := ac.RemoveAppConfig(); err != nil {
 		t.Error(err)
 	}
 
-	err = os.RemoveAll(currentDir + "/_test")
-	if err != nil {
-		t.Error(err)
-	}
-	err = os.Mkdir(currentDir+"/_test", os.FileMode(0755))
-	if err != nil {
+	// デフォルト書き込み
+	if err := ac.WriteDefaultGitlabAccessConfig(); err != nil {
 		t.Error(err)
 	}
 
-	configDirPath := createConfigDirPath(currentDir + "/_test")
-
-	// no file test
-	_, err = ReadFileGitlabAccessTokenJson(configDirPath + configFileName)
-	if err == nil {
-		t.Error(err)
-	}
-
-	// default write
-	var wConfig GitlabAccessConfig
-	wConfig, err = WriteFileDefaultConfig(configDirPath + configFileName)
+	// 読み込み
+	c, err := ac.ReadGitlabAccessTokenJson()
 	if err != nil {
 		t.Error(err)
-	}
-	if wConfig.Token != defaultConfig.Token {
-		t.Error("config token missmatch")
+	} else {
+		if c.Token != defaultConfig.Token {
+			t.Error("config token missmatch")
+		}
 	}
 
-	// read
-	var rConfig GitlabAccessConfig
-	rConfig, err = ReadFileGitlabAccessTokenJson(configDirPath + configFileName)
-	if err != nil {
-		t.Error(err)
-	}
-	if rConfig.Token != wConfig.Token {
+	// テスト後に削除
+	if err := ac.RemoveAppConfig(); err != nil {
 		t.Error(err)
 	}
 }
