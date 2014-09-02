@@ -105,7 +105,7 @@ func doCheckProject(_ *cli.Context) {
 	fmt.Println("projectName = ", projectName)
 }
 
-func doShowIssue(c *cli.Context) {
+func doListIssue(_ *cli.Context) {
 	gitlab, err := CreateGitlab()
 	if err != nil {
 		log.Fatal("error create gitlab ")
@@ -121,7 +121,11 @@ func doShowIssue(c *cli.Context) {
 		log.Fatal("not gitlab projectId ", err)
 	}
 
-	ShowIssue(gitlab, projectId, c.Bool("detail"))
+	ShowIssue(gitlab, projectId)
+}
+
+func doShowIssue(_ *cli.Context) {
+	// TODO:
 }
 
 func doInitConfig(c *cli.Context) {
@@ -158,8 +162,8 @@ func main() {
 
 	app.Commands = []cli.Command{
 		{
-			Name:      "create_issue",
-			ShortName: "i",
+			Name:      "add_issue",
+			ShortName: "add",
 			Usage:     "project create issue",
 			Flags: []cli.Flag{
 				cli.StringFlag{"title, t", "", "issue title.", ""},
@@ -170,18 +174,21 @@ func main() {
 		},
 		{
 			Name:      "check-project",
-			ShortName: "c",
+			ShortName: "check",
 			Usage:     "check project name",
 			Action:    doCheckProject,
 		},
 		{
 			Name:      "list-issue",
-			ShortName: "l",
+			ShortName: "list",
 			Usage:     "list project issue",
+			Action:    doListIssue,
+		},
+		{
+			Name:      "issue",
+			ShortName: "",
+			Usage:     "show project issue",
 			Action:    doShowIssue,
-			Flags: []cli.Flag{
-				cli.BoolFlag{"detail, d", "show/hide issue detail.", ""},
-			},
 		},
 		{
 			Name:      "init-config",
