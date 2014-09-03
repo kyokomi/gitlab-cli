@@ -10,7 +10,8 @@ gitlab command line tool golang
 ## Install ##
 
 ```
-$ go get git@github.com:kyokomi/gitlab-cli.git
+$ go get github.com:kyokomi/gitlab-cli
+$ godep get
 ```
 ## Usage ##
 
