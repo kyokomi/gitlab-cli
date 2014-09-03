@@ -10,9 +10,9 @@ const configFileName = "config.json"
 
 // ${HOME}/.gitlab-cli/config.json
 type GitlabAccessConfig struct {
-	Host    string `json:"host"`
-	ApiPath string `json:"api_path"`
-	Token   string `json:"token"`
+	Host          string `json:"host"`
+	ApiPath       string `json:"api_path"`
+	Token         string `json:"token"`
 }
 
 var defaultConfig = GitlabAccessConfig{
@@ -33,7 +33,7 @@ func NewGitlabCliAppConfig(appName string) *GitlabCliAppConfig {
 
 // アクセストークンを保存してるローカルファイルを読み込んで返却する.
 func (a GitlabCliAppConfig) ReadGitlabAccessTokenJson() (*GitlabAccessConfig, error) {
-	data ,err := a.ReadAppConfig()
+	data, err := a.ReadAppConfig()
 	if err != nil {
 		return nil, err
 	}

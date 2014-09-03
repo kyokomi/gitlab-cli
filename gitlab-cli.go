@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"net/url"
@@ -20,13 +19,13 @@ const (
 var gitlabAppConfig *GitlabCliAppConfig
 
 // Gitlabクライアントを作成する.
-func CreateGitlab() (*gogitlab.Gitlab, error) {
+func CreateGitlab(skipCert bool) (*gogitlab.Gitlab, error) {
 	config, err := gitlabAppConfig.ReadGitlabAccessTokenJson()
 	if err != nil {
 		return nil, err
 	}
-	flag.Parse()
-	return gogitlab.NewGitlab(config.Host, config.ApiPath, config.Token), nil
+
+	return gogitlab.NewGitlabCert(config.Host, config.ApiPath, config.Token, skipCert), nil
 }
 
 // 対象Projectのissueを作成する.
@@ -82,8 +81,7 @@ func ShowIssue(gitlab *gogitlab.Gitlab, projectId int) {
 
 // issue create task.
 func doCreateIssue(c *cli.Context) {
-
-	gitlab, err := CreateGitlab()
+	gitlab, err := CreateGitlab(c.GlobalBool("skip-cert-check"))
 	if err != nil {
 		log.Fatal("error create gitlab ")
 	}
@@ -117,8 +115,8 @@ func doCheckProject(_ *cli.Context) {
 	fmt.Println("projectName = ", projectName)
 }
 
-func doListIssue(_ *cli.Context) {
-	gitlab, err := CreateGitlab()
+func doListIssue(c *cli.Context) {
+	gitlab, err := CreateGitlab(c.GlobalBool("skip-cert-check"))
 	if err != nil {
 		log.Fatal("error create gitlab ")
 	}
@@ -165,7 +163,7 @@ func main() {
 	app.Usage = "todo:"
 
 	app.Flags = []cli.Flag{
-		cli.BoolFlag{"gitlab.skip-cert-check",
+		cli.BoolFlag{"skip-cert-check,s",
 			"If set to true, gitlab client will skip certificate checking for https, possibly exposing your system to MITM attack.",
 			"GITLAB.SKIP_CERT_CHECK"},
 	}
