@@ -45,7 +45,7 @@ func PostIssue(gitlab *gogitlab.Gitlab, projectId int, data url.Values) error {
 
 func ShowIssue(gitlab *gogitlab.Gitlab, projectId int) {
 	c := make(chan []*gogitlab.Issue)
-	go func(s chan <- []*gogitlab.Issue) {
+	go func(s chan<- []*gogitlab.Issue) {
 		page := 1
 		for {
 			issues, err := gitlab.ProjectIssues(projectId, page)
@@ -60,14 +60,14 @@ func ShowIssue(gitlab *gogitlab.Gitlab, projectId int) {
 	}(c)
 
 	for {
-		issues, ok := <- c
+		issues, ok := <-c
 		if !ok {
 			break
 		}
 
 		for _, issue := range issues {
-			titleCount := 50 + ((utf8.RuneCountInString(issue.Title) - len(issue.Title)) / 2)
-			nameCount := 30 + ((utf8.RuneCountInString(issue.Assignee.Name) - len(issue.Assignee.Name)) / 2)
+			titleCount := 90 + ((utf8.RuneCountInString(issue.Title) - len(issue.Title)) / 2)
+			nameCount := 16 + ((utf8.RuneCountInString(issue.Assignee.Name) - len(issue.Assignee.Name)) / 2)
 			t := fmt.Sprintf("[blue]#%%-4d %%-7s [white]%%-%ds [green]%%-%ds [white]%%-33s / %%-33s", titleCount, nameCount)
 			fmt.Println(colorstring.Color(fmt.Sprintf(t,
 				issue.LocalId,
