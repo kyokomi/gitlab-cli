@@ -5,87 +5,66 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"unicode/utf8"
+
+	"strconv"
 
 	"github.com/codegangsta/cli"
 	"github.com/kyokomi/go-gitlab-client/gogitlab"
-	"github.com/mitchellh/colorstring"
 )
 
 var gitlabAppConfig *GitlabCliAppConfig
 
-func createGitlab(skipCert bool) (*gogitlab.Gitlab, error) {
+type gitLabCli struct {
+	*gogitlab.Gitlab
+	currentUser        gogitlab.User
+	currentProjectID   int
+	currentProjectName string
+}
+
+func newGitLabCli(skipCert bool) (*gitLabCli, error) {
 	config, err := gitlabAppConfig.ReadGitlabAccessTokenJson()
 	if err != nil {
 		return nil, err
 	}
+	gitLab := gitLabCli{Gitlab: gogitlab.NewGitlabCert(config.Host, config.ApiPath, config.Token, skipCert)}
 
-	return gogitlab.NewGitlabCert(config.Host, config.ApiPath, config.Token, skipCert), nil
-}
-
-func showIssue(gitLab *gogitlab.Gitlab, projectID int) {
-	c := make(chan []*gogitlab.Issue)
-	go func(s chan<- []*gogitlab.Issue) {
-		page := 1
-		for {
-			issues, err := gitLab.ProjectIssues(projectID, page)
-			if err != nil || len(issues) == 0 {
-				break
-			}
-			page++
-
-			s <- issues
-		}
-		close(s)
-	}(c)
-
-	for {
-		issues, ok := <-c
-		if !ok {
-			break
-		}
-
-		for _, issue := range issues {
-			titleCount := 90 + ((utf8.RuneCountInString(issue.Title) - len(issue.Title)) / 2)
-			nameCount := 16 + ((utf8.RuneCountInString(issue.Assignee.Name) - len(issue.Assignee.Name)) / 2)
-			t := fmt.Sprintf("[blue]#%%-4d %%-7s [white]%%-%ds [green]%%-%ds [white]%%-33s / %%-33s", titleCount, nameCount)
-			fmt.Println(colorstring.Color(fmt.Sprintf(t,
-				issue.LocalID,
-				issue.State,
-				issue.Title,
-				issue.Assignee.Name,
-				issue.CreatedAt,
-				issue.UpdatedAt)))
-		}
+	projectName, err := GetCurrentDirProjectName()
+	if err != nil {
+		return nil, err
 	}
+	gitLab.currentProjectName = projectName
+
+	projectID, err := gitLab.GetProjectID(projectName)
+	if err != nil {
+		return nil, err
+	}
+	gitLab.currentProjectID = projectID
+
+	user, err := gitLab.CurrentUser()
+	if err != nil {
+		return nil, err
+	}
+	gitLab.currentUser = user
+
+	return &gitLab, nil
 }
 
 // issue create task.
 func doCreateIssue(c *cli.Context) {
-	gitlab, err := createGitlab(c.GlobalBool("skip-cert-check"))
+	gitLab, err := newGitLabCli(c.GlobalBool("skip-cert-check"))
 	if err != nil {
 		log.Fatal("error create gitlab ")
-	}
-
-	projectName, err := GetCurrentDirProjectName()
-	if err != nil {
-		log.Fatal("not gitlab projectName ", err)
-	}
-
-	projectID, err := GetProjectID(gitlab, projectName)
-	if err != nil {
-		log.Fatal("not gitlab projectID ", err)
 	}
 
 	values := url.Values{
 		//		"id":           {"1"},
 		"title":       {c.String("t")},
 		"description": {c.String("d")},
-		//		"assignee_id":  {"1"},
+		"assignee_id": {strconv.Itoa(gitLab.currentUser.ID)},
 		//		"milestone_id": {"1"},
 		"labels": {c.String("l")},
 	}
-	res, err := PostIssue(gitlab, projectID, values)
+	res, err := gitLab.PostIssue(gitLab.currentProjectID, values)
 	if err != nil {
 		log.Fatal("project issue create error ", err)
 	}
@@ -102,7 +81,7 @@ func doCheckProject(_ *cli.Context) {
 }
 
 func doListIssue(c *cli.Context) {
-	gitlab, err := createGitlab(c.GlobalBool("skip-cert-check"))
+	gitLab, err := newGitLabCli(c.GlobalBool("skip-cert-check"))
 	if err != nil {
 		log.Fatal("error create gitlab ")
 	}
@@ -112,12 +91,12 @@ func doListIssue(c *cli.Context) {
 		log.Fatal("not gitlab projectName ", err)
 	}
 
-	projectID, err := GetProjectID(gitlab, projectName)
+	projectID, err := gitLab.GetProjectID(projectName)
 	if err != nil {
 		log.Fatal("not gitlab projectID ", err)
 	}
 
-	showIssue(gitlab, projectID)
+	gitLab.PrintIssue(projectID)
 }
 
 func doShowIssue(_ *cli.Context) {
