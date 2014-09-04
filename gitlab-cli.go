@@ -16,7 +16,6 @@ var gitlabAppConfig *GitlabCliAppConfig
 
 type gitLabCli struct {
 	*gogitlab.Gitlab
-	currentUser        gogitlab.User
 	currentProjectID   int
 	currentProjectName string
 }
@@ -40,12 +39,6 @@ func newGitLabCli(skipCert bool) (*gitLabCli, error) {
 	}
 	gitLab.currentProjectID = projectID
 
-	user, err := gitLab.CurrentUser()
-	if err != nil {
-		return nil, err
-	}
-	gitLab.currentUser = user
-
 	return &gitLab, nil
 }
 
@@ -56,11 +49,16 @@ func doCreateIssue(c *cli.Context) {
 		log.Fatal("error create gitlab ")
 	}
 
+	user, err := gitLab.CurrentUser()
+	if err != nil {
+		log.Fatal("error get current user gitlab ")
+	}
+
 	values := url.Values{
 		//		"id":           {"1"},
 		"title":       {c.String("t")},
 		"description": {c.String("d")},
-		"assignee_id": {strconv.Itoa(gitLab.currentUser.ID)},
+		"assignee_id": {strconv.Itoa(user.ID)},
 		//		"milestone_id": {"1"},
 		"labels": {c.String("l")},
 	}

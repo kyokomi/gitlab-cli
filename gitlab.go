@@ -3,13 +3,14 @@ package main
 import (
 	"strconv"
 
-	"strings"
-	"net/url"
-	"io/ioutil"
-	"github.com/kyokomi/go-gitlab-client/gogitlab"
-	"unicode/utf8"
-	"github.com/mitchellh/colorstring"
 	"fmt"
+	"io/ioutil"
+	"net/url"
+	"strings"
+	"unicode/utf8"
+
+	"github.com/kyokomi/go-gitlab-client/gogitlab"
+	color "github.com/mitchellh/colorstring"
 )
 
 // 対象ProjectのProjectNameを取得する.
@@ -35,8 +36,8 @@ func (gitLab *gitLabCli) GetProjectName(projectID int) (string, error) {
 	return project.Name, nil
 }
 
-func (gitLab *gitLabCli) GetUserName(userId int) (string, error) {
-	user, err := gitLab.User(strconv.Itoa(userId))
+func (gitLab *gitLabCli) GetUserName(userID int) (string, error) {
+	user, err := gitLab.User(strconv.Itoa(userID))
 	if err != nil {
 		return "", err
 	}
@@ -89,13 +90,19 @@ func (gitLab *gitLabCli) PrintIssue(projectID int) {
 		}
 
 		for _, issue := range issues {
-			titleCount := 90 + ((utf8.RuneCountInString(issue.Title) - len(issue.Title)) / 2)
+			titleCount := 60 + ((utf8.RuneCountInString(issue.Title) - len(issue.Title)) / 2)
 			nameCount := 16 + ((utf8.RuneCountInString(issue.Assignee.Name) - len(issue.Assignee.Name)) / 2)
 			t := fmt.Sprintf("[blue]#%%-4d %%-7s [white]%%-%ds [green]%%-%ds [white]%%-33s / %%-33s", titleCount, nameCount)
-			fmt.Println(colorstring.Color(fmt.Sprintf(t,
+
+			title := issue.Title
+			if len(title) > 60 {
+				title = title[:60-4] + " ..."
+			}
+
+			fmt.Println(color.Color(fmt.Sprintf(t,
 				issue.LocalID,
 				issue.State,
-				issue.Title,
+				title,
 				issue.Assignee.Name,
 				issue.CreatedAt,
 				issue.UpdatedAt)))
