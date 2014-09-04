@@ -1,10 +1,10 @@
 package main
 
 import (
-	"os"
-	"testing"
-	"strings"
 	"fmt"
+	"os"
+	"strings"
+	"testing"
 )
 
 var testDir string

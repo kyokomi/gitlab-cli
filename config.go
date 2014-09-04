@@ -10,9 +10,9 @@ const configFileName = "config.json"
 
 // ${HOME}/.gitlab-cli/config.json
 type GitlabAccessConfig struct {
-	Host          string `json:"host"`
-	ApiPath       string `json:"api_path"`
-	Token         string `json:"token"`
+	Host    string `json:"host"`
+	ApiPath string `json:"api_path"`
+	Token   string `json:"token"`
 }
 
 var defaultConfig = GitlabAccessConfig{

@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/kyokomi/go-gitlab-client/gogitlab"
 	"strconv"
+
+	"github.com/kyokomi/go-gitlab-client/gogitlab"
 )
 
 // 対象ProjectのProjectNameを取得する.
-func GetProjectId(gitlab *gogitlab.Gitlab, projectName string) (int, error) {
+func GetProjectID(gitlab *gogitlab.Gitlab, projectName string) (int, error) {
 	projects, err := gitlab.Projects()
 	if err != nil {
 		return 0, err
@@ -14,14 +15,14 @@ func GetProjectId(gitlab *gogitlab.Gitlab, projectName string) (int, error) {
 
 	for _, project := range projects {
 		if project.Name == projectName {
-			return project.Id, nil
+			return project.ID, nil
 		}
 	}
 	return 0, nil
 }
 
-func GetProjectName(gitlab *gogitlab.Gitlab, projectId int) (string, error) {
-	project, err := gitlab.Project(strconv.Itoa(projectId))
+func GetProjectName(gitlab *gogitlab.Gitlab, projectID int) (string, error) {
+	project, err := gitlab.Project(strconv.Itoa(projectID))
 	if err != nil {
 		return "", err
 	}
@@ -37,8 +38,8 @@ func GetUserName(gitlab *gogitlab.Gitlab, userId int) (string, error) {
 }
 
 //	/projects/:id/milestones/:milestone_id
-func GetMilestoneTitle(gitlab *gogitlab.Gitlab, projectId, milestoneId int) (string, error) {
-	milestone, err := gitlab.ProjectMilestone(strconv.Itoa(projectId), strconv.Itoa(milestoneId))
+func GetMilestoneTitle(gitlab *gogitlab.Gitlab, projectID, milestoneID int) (string, error) {
+	milestone, err := gitlab.ProjectMilestone(strconv.Itoa(projectID), strconv.Itoa(milestoneID))
 	if err != nil {
 		return "", err
 	}

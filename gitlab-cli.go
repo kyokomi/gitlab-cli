@@ -42,12 +42,12 @@ func PostIssue(gitlab *gogitlab.Gitlab, projectId int, data url.Values) error {
 	return nil
 }
 
-func ShowIssue(gitlab *gogitlab.Gitlab, projectId int) {
+func showIssue(gitlab *gogitlab.Gitlab, projectID int) {
 	c := make(chan []*gogitlab.Issue)
 	go func(s chan<- []*gogitlab.Issue) {
 		page := 1
 		for {
-			issues, err := gitlab.ProjectIssues(projectId, page)
+			issues, err := gitlab.ProjectIssues(projectID, page)
 			if err != nil || len(issues) == 0 {
 				break
 			}
@@ -69,7 +69,7 @@ func ShowIssue(gitlab *gogitlab.Gitlab, projectId int) {
 			nameCount := 16 + ((utf8.RuneCountInString(issue.Assignee.Name) - len(issue.Assignee.Name)) / 2)
 			t := fmt.Sprintf("[blue]#%%-4d %%-7s [white]%%-%ds [green]%%-%ds [white]%%-33s / %%-33s", titleCount, nameCount)
 			fmt.Println(colorstring.Color(fmt.Sprintf(t,
-				issue.LocalId,
+				issue.LocalID,
 				issue.State,
 				issue.Title,
 				issue.Assignee.Name,
@@ -91,9 +91,9 @@ func doCreateIssue(c *cli.Context) {
 		log.Fatal("not gitlab projectName ", err)
 	}
 
-	projectId, err := GetProjectId(gitlab, projectName)
+	projectID, err := GetProjectID(gitlab, projectName)
 	if err != nil {
-		log.Fatal("not gitlab projectId ", err)
+		log.Fatal("not gitlab projectID ", err)
 	}
 
 	PostIssue(gitlab, projectId, url.Values{
@@ -126,12 +126,12 @@ func doListIssue(c *cli.Context) {
 		log.Fatal("not gitlab projectName ", err)
 	}
 
-	projectId, err := GetProjectId(gitlab, projectName)
+	projectID, err := GetProjectID(gitlab, projectName)
 	if err != nil {
-		log.Fatal("not gitlab projectId ", err)
+		log.Fatal("not gitlab projectID ", err)
 	}
 
-	ShowIssue(gitlab, projectId)
+	showIssue(gitlab, projectID)
 }
 
 func doShowIssue(_ *cli.Context) {
