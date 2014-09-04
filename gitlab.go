@@ -4,6 +4,9 @@ import (
 	"strconv"
 
 	"github.com/kyokomi/go-gitlab-client/gogitlab"
+	"strings"
+	"net/url"
+	"io/ioutil"
 )
 
 // 対象ProjectのProjectNameを取得する.
@@ -44,4 +47,18 @@ func GetMilestoneTitle(gitlab *gogitlab.Gitlab, projectID, milestoneID int) (str
 		return "", err
 	}
 	return milestone.Title, nil
+}
+
+func PostIssue(gitlab *gogitlab.Gitlab, projectID int, values url.Values) ([]byte, error) {
+	reader := strings.NewReader(values.Encode())
+	data, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return nil, err
+	}
+	res, err := gitlab.ProjectCreateIssues(projectID, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

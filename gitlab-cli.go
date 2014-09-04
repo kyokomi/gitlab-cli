@@ -12,14 +12,9 @@ import (
 	"github.com/mitchellh/colorstring"
 )
 
-const (
-	ProjectIssueUrl = "projects/%d/issues/"
-)
-
 var gitlabAppConfig *GitlabCliAppConfig
 
-// Gitlabクライアントを作成する.
-func CreateGitlab(skipCert bool) (*gogitlab.Gitlab, error) {
+func createGitlab(skipCert bool) (*gogitlab.Gitlab, error) {
 	config, err := gitlabAppConfig.ReadGitlabAccessTokenJson()
 	if err != nil {
 		return nil, err
@@ -28,26 +23,12 @@ func CreateGitlab(skipCert bool) (*gogitlab.Gitlab, error) {
 	return gogitlab.NewGitlabCert(config.Host, config.ApiPath, config.Token, skipCert), nil
 }
 
-// 対象Projectのissueを作成する.
-func PostIssue(gitlab *gogitlab.Gitlab, projectId int, data url.Values) error {
-	issue := fmt.Sprintf(ProjectIssueUrl, projectId)
-	url := gitlab.ResourceUrl(issue, nil)
-
-	res, err := gitlab.Client.PostForm(url, data)
-	if err != nil {
-		return err
-	}
-	fmt.Println(res)
-
-	return nil
-}
-
-func showIssue(gitlab *gogitlab.Gitlab, projectID int) {
+func showIssue(gitLab *gogitlab.Gitlab, projectID int) {
 	c := make(chan []*gogitlab.Issue)
 	go func(s chan<- []*gogitlab.Issue) {
 		page := 1
 		for {
-			issues, err := gitlab.ProjectIssues(projectID, page)
+			issues, err := gitLab.ProjectIssues(projectID, page)
 			if err != nil || len(issues) == 0 {
 				break
 			}
@@ -81,7 +62,7 @@ func showIssue(gitlab *gogitlab.Gitlab, projectID int) {
 
 // issue create task.
 func doCreateIssue(c *cli.Context) {
-	gitlab, err := CreateGitlab(c.GlobalBool("skip-cert-check"))
+	gitlab, err := createGitlab(c.GlobalBool("skip-cert-check"))
 	if err != nil {
 		log.Fatal("error create gitlab ")
 	}
@@ -96,14 +77,19 @@ func doCreateIssue(c *cli.Context) {
 		log.Fatal("not gitlab projectID ", err)
 	}
 
-	PostIssue(gitlab, projectId, url.Values{
+	values := url.Values{
 		//		"id":           {"1"},
 		"title":       {c.String("t")},
 		"description": {c.String("d")},
 		//		"assignee_id":  {"1"},
 		//		"milestone_id": {"1"},
 		"labels": {c.String("l")},
-	})
+	}
+	res, err := PostIssue(gitlab, projectID, values)
+	if err != nil {
+		log.Fatal("project issue create error ", err)
+	}
+	fmt.Println("done. ", string(res))
 }
 
 // project check task.
@@ -116,7 +102,7 @@ func doCheckProject(_ *cli.Context) {
 }
 
 func doListIssue(c *cli.Context) {
-	gitlab, err := CreateGitlab(c.GlobalBool("skip-cert-check"))
+	gitlab, err := createGitlab(c.GlobalBool("skip-cert-check"))
 	if err != nil {
 		log.Fatal("error create gitlab ")
 	}
