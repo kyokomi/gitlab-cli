@@ -98,12 +98,12 @@ func (gitLab *gitLabCli) PrintIssue(projectID int) {
 		for _, issue := range issues {
 
 			title := issue.Title
-			if len(title) > titleCount {
+			if checkTrim(title) {
 				title = trimPrefixIndex(title)
 			}
 
 			name := issue.Assignee.Name
-			if len(name) > nameCount {
+			if checkTrim(name) {
 				name = trimPrefixIndex(name)
 			}
 
@@ -125,10 +125,18 @@ func (gitLab *gitLabCli) PrintIssue(projectID int) {
 func trimPrefixIndex(s string) string {
 	t := ""
 	for _, r := range s {
-		t += string(r)
-		if len(t) >= (titleCount - len(outTitleReplaceText)) {
+		if checkTrim(t + string(r) + outTitleReplaceText) {
 			break
 		}
+		t += string(r)
 	}
 	return t + outTitleReplaceText
+}
+
+func checkTrim(t string) bool {
+	diff := ((utf8.RuneCountInString(t) - len(t)) / 2)
+	if utf8.RuneCountInString(t) > (titleCount + diff) {
+		return true
+	}
+	return false
 }
