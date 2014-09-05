@@ -13,6 +13,12 @@ import (
 	color "github.com/mitchellh/colorstring"
 )
 
+const (
+	titleCount          = 60
+	nameCount           = 16
+	outTitleReplaceText = " ..."
+)
+
 // 対象ProjectのProjectNameを取得する.
 func (gitLab *gitLabCli) GetProjectID(projectName string) (int, error) {
 	projects, err := gitLab.Projects()
@@ -90,22 +96,39 @@ func (gitLab *gitLabCli) PrintIssue(projectID int) {
 		}
 
 		for _, issue := range issues {
-			titleCount := 60 + ((utf8.RuneCountInString(issue.Title) - len(issue.Title)) / 2)
-			nameCount := 16 + ((utf8.RuneCountInString(issue.Assignee.Name) - len(issue.Assignee.Name)) / 2)
-			t := fmt.Sprintf("[blue]#%%-4d %%-7s [white]%%-%ds [green]%%-%ds [white]%%-33s / %%-33s", titleCount, nameCount)
 
 			title := issue.Title
-			if len(title) > 60 {
-				title = title[:60-4] + " ..."
+			if len(title) > titleCount {
+				title = trimPrefixIndex(title)
 			}
+
+			name := issue.Assignee.Name
+			if len(name) > nameCount {
+				name = trimPrefixIndex(name)
+			}
+
+			titleCount := titleCount + ((utf8.RuneCountInString(title) - len(title)) / 2)
+			nameCount := nameCount + ((utf8.RuneCountInString(name) - len(name)) / 2)
+			t := fmt.Sprintf("[blue]#%%-4d %%-7s [white]%%-%ds [green]%%-%ds [white]%%-33s / %%-33s", titleCount, nameCount)
 
 			fmt.Println(color.Color(fmt.Sprintf(t,
 				issue.LocalID,
 				issue.State,
 				title,
-				issue.Assignee.Name,
+				name,
 				issue.CreatedAt,
 				issue.UpdatedAt)))
 		}
 	}
+}
+
+func trimPrefixIndex(s string) string {
+	t := ""
+	for _, r := range s {
+		t += string(r)
+		if len(t) >= (titleCount - len(outTitleReplaceText)) {
+			break
+		}
+	}
+	return t + outTitleReplaceText
 }
