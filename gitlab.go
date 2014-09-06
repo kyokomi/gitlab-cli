@@ -73,7 +73,7 @@ func (gitLab *gitLabCli) PostIssue(projectID int, values url.Values) ([]byte, er
 	return res, nil
 }
 
-func (gitLab *gitLabCli) PrintIssue(projectID int) {
+func (gitLab *gitLabCli) PrintIssue(projectID int, state string) {
 	c := make(chan []*gogitlab.Issue)
 	go func(s chan<- []*gogitlab.Issue) {
 		page := 1
@@ -85,6 +85,10 @@ func (gitLab *gitLabCli) PrintIssue(projectID int) {
 			page++
 
 			s <- issues
+
+			if state != "" && issues[len(issues) - 1].State != state {
+				break
+			}
 		}
 		close(s)
 	}(c)
@@ -96,6 +100,9 @@ func (gitLab *gitLabCli) PrintIssue(projectID int) {
 		}
 
 		for _, issue := range issues {
+			if state != "" && issue.State != state {
+				continue
+			}
 
 			title := issue.Title
 			if checkTrim(title) {

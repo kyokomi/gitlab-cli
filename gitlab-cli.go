@@ -94,7 +94,7 @@ func doListIssue(c *cli.Context) {
 		log.Fatal("not gitlab projectID ", err)
 	}
 
-	gitLab.PrintIssue(projectID)
+	gitLab.PrintIssue(projectID, c.String("state"))
 }
 
 func doShowIssue(_ *cli.Context) {
@@ -156,6 +156,9 @@ func main() {
 			ShortName: "list",
 			Usage:     "list project issue",
 			Action:    doListIssue,
+			Flags: []cli.Flag{
+				cli.StringFlag{"state, s", "", "state condition", ""},
+			},
 		},
 		{
 			Name:      "issue",
