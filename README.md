@@ -10,8 +10,8 @@ gitlab command line tool golang
 ## Install ##
 
 ```
-$ go get github.com:kyokomi/gitlab-cli
-$ godep get
+$ brew tap kyokomi/homebrew-gitlab-cli
+$ brew install gitlab-cli
 ```
 ## Usage ##
 

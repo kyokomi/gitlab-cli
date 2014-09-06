@@ -34,3 +34,5 @@ gitlab-cli.iml
 Godeps/Readme
 Godeps/_workspace
 
+gitlab-cli
+gitlab-cli_darwin_amd64.zip
