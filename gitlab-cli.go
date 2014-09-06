@@ -97,8 +97,28 @@ func doListIssue(c *cli.Context) {
 	gitLab.PrintIssue(projectID, c.String("state"))
 }
 
-func doShowIssue(_ *cli.Context) {
-	// TODO:
+func doShowIssue(c *cli.Context) {
+
+	issueID := c.Int("issue-id")
+
+	gitLab, err := newGitLabCli(c.GlobalBool("skip-cert-check"))
+	if err != nil {
+		log.Fatal("error create gitlab ")
+	}
+
+	projectName, err := GetCurrentDirProjectName()
+	if err != nil {
+		log.Fatal("not gitlab projectName ", err)
+	}
+
+	projectID, err := gitLab.GetProjectID(projectName)
+	if err != nil {
+		log.Fatal("not gitlab projectID ", err)
+	}
+
+	if err := gitLab.PrintIssueDetail(projectID, issueID); err != nil {
+		log.Fatal("not gitlab projectID ", err)
+	}
 }
 
 func doInitConfig(c *cli.Context) {
@@ -165,6 +185,9 @@ func main() {
 			ShortName: "",
 			Usage:     "show project issue",
 			Action:    doShowIssue,
+			Flags: []cli.Flag{
+				cli.IntFlag{"issue-id, id", 0, "show issue_id", ""},
+			},
 		},
 		{
 			Name:      "init-config",

@@ -13,7 +13,7 @@
 		},
 		{
 			"ImportPath": "github.com/kyokomi/go-gitlab-client/gogitlab",
-			"Rev": "9d9f6302d3887d4cdf3097527b3054384a1c6e1e"
+			"Rev": "baad5e8d221a8a6dd196001f52d961aa41f4cfb3"
 		},
 		{
 			"ImportPath": "github.com/mitchellh/colorstring",

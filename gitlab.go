@@ -11,6 +11,8 @@ import (
 
 	"github.com/kyokomi/go-gitlab-client/gogitlab"
 	color "github.com/mitchellh/colorstring"
+	"text/template"
+	"bytes"
 )
 
 const (
@@ -18,6 +20,21 @@ const (
 	nameCount           = 16
 	outTitleReplaceText = " ..."
 )
+
+type TemplateExec struct {
+	Issue *gogitlab.Issue
+	Notes []*gogitlab.Note
+}
+
+const issueDetailTemplate = `
+{{.Issue.Title}}
+
+Author: [green]@{{.Issue.Author.Name}} [blue]{{.Issue.State}} [white]{{.Issue.CreatedAt}}
+-------------------------------------------------------------------------------------------
+{{.Issue.Description}}
+-------------------------------------------------------------------------------------------
+{{range $idx, $note := .Notes}}[green]@{{$note.Author.Name}}: [white]{{$note.Body}}
+{{end}}`
 
 // 対象ProjectのProjectNameを取得する.
 func (gitLab *gitLabCli) GetProjectID(projectName string) (int, error) {
@@ -75,23 +92,12 @@ func (gitLab *gitLabCli) PostIssue(projectID int, values url.Values) ([]byte, er
 
 func (gitLab *gitLabCli) PrintIssue(projectID int, state string) {
 	c := make(chan []*gogitlab.Issue)
-	go func(s chan<- []*gogitlab.Issue) {
-		page := 1
-		for {
-			issues, err := gitLab.ProjectIssues(projectID, page)
-			if err != nil || len(issues) == 0 {
-				break
-			}
-			page++
-
-			s <- issues
-
-			if state != "" && issues[len(issues) - 1].State != state {
-				break
-			}
+	go gitLab.findIssueState(c, projectID, func(issues []*gogitlab.Issue) bool {
+		if state != "" && issues[len(issues)-1].State != state {
+			return true
 		}
-		close(s)
-	}(c)
+		return false
+	})
 
 	for {
 		issues, ok := <-c
@@ -127,6 +133,79 @@ func (gitLab *gitLabCli) PrintIssue(projectID int, state string) {
 				issue.UpdatedAt)))
 		}
 	}
+}
+
+func (gitLab *gitLabCli) findIssueState(s chan<- []*gogitlab.Issue, projectID int, findFunc func([]*gogitlab.Issue) bool) {
+	page := 1
+	for {
+		issues, err := gitLab.ProjectIssues(projectID, page)
+		if err != nil || len(issues) == 0 {
+			break
+		}
+		page++
+
+		s <- issues
+
+		if findFunc(issues) {
+			break
+		}
+	}
+	close(s)
+}
+
+func (gitLab *gitLabCli) findIssueByID(projectID, issueID int) *gogitlab.Issue {
+	c := make(chan []*gogitlab.Issue)
+	go gitLab.findIssueState(c, projectID, func(issues []*gogitlab.Issue) bool {
+		for _, issue := range issues {
+			if issue.LocalID == issueID {
+				return true
+			}
+		}
+		return false
+	})
+
+	for {
+		issues, ok := <-c
+		if !ok {
+			break
+		}
+
+		for _, issue := range issues {
+			if issue.LocalID != issueID {
+				continue
+			}
+
+			return issue
+		}
+	}
+	return nil
+}
+
+func (gitLab *gitLabCli) PrintIssueDetail(projectID, issueID int) error {
+	if issueID == 0 {
+		fmt.Println("not issue_id")
+		return nil
+	}
+
+	issue := gitLab.findIssueByID(projectID, issueID)
+	if issue == nil {
+		fmt.Println("not found issue")
+		return nil
+	}
+
+	notes, err := gitLab.IssuesNotes(projectID, issue.ID)
+	if err != nil {
+		return err
+	}
+
+	t := template.Must(template.New("issueDetail").Parse(issueDetailTemplate))
+	var buf bytes.Buffer
+	if err := t.Execute(&buf, TemplateExec{Issue: issue, Notes: notes}); err != nil {
+		return err
+	}
+	fmt.Println(color.Color(buf.String()))
+
+	return nil
 }
 
 func trimPrefixIndex(s string) string {

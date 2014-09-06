@@ -34,6 +34,8 @@ $ gitlab-cli init --host https://gitlab.com/ --api-path api/v3/ --token aaaaaaaa
 $ gitlab-cli list
 ```
 
+- `--state`: state filter (`opened` or `closed`)
+
 ### Create Issue
 
 ```
@@ -42,13 +44,25 @@ $ gitlab-cli add -t title -d hoge -l aaa,bbbb,hoge,tag
 
 - `-t`: issue title
 - `-d`: issue detail
-- `-l`: issue labels (カンマ区切りで複数可)
+- `-l`: issue labels (array of a comma delimited string)
+
+### Issue Detail
+
+```
+$ gitlab-cli issue --id 28
+```
+
+- `--issue-id, --id`: issue loclaID
 
 ## Demo
 
 ### Issues List
 
 ![/gitlab-cli_demo_issue-list.png](https://dl.dropbox.com/u/49084962/gitlab-cli_demo_issue-list.png)
+
+### Issue Detail
+
+![/gitlab_cli_issue.png](https://dl.dropbox.com/u/49084962/gitlab_cli_issue.png)
 
 ## LICENSE
 
