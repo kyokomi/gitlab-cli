@@ -13,7 +13,7 @@ func init() {
 	currentDir, _ := os.Getwd()
 	testDir = strings.Join([]string{currentDir, "_test"}, "/")
 
-	os.MkdirAll(testDir, os.FileMode(0755))
+	os.MkdirAll(testDir, 0755)
 
 	fmt.Println("init complete")
 }

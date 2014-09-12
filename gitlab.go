@@ -9,10 +9,11 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"bytes"
+	"text/template"
+
 	"github.com/kyokomi/go-gitlab-client/gogitlab"
 	color "github.com/mitchellh/colorstring"
-	"text/template"
-	"bytes"
 )
 
 const (
@@ -21,7 +22,7 @@ const (
 	outTitleReplaceText = " ..."
 )
 
-type TemplateExec struct {
+type templateExec struct {
 	Issue *gogitlab.Issue
 	Notes []*gogitlab.Note
 }
@@ -200,7 +201,7 @@ func (gitLab *gitLabCli) PrintIssueDetail(projectID, issueID int) error {
 
 	t := template.Must(template.New("issueDetail").Parse(issueDetailTemplate))
 	var buf bytes.Buffer
-	if err := t.Execute(&buf, TemplateExec{Issue: issue, Notes: notes}); err != nil {
+	if err := t.Execute(&buf, templateExec{Issue: issue, Notes: notes}); err != nil {
 		return err
 	}
 	fmt.Println(color.Color(buf.String()))
