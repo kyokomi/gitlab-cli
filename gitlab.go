@@ -19,6 +19,7 @@ import (
 const (
 	titleCount          = 60
 	nameCount           = 16
+	labelCount           = 20
 	outTitleReplaceText = " ..."
 )
 
@@ -121,15 +122,22 @@ func (gitLab *gitLabCli) PrintIssue(projectID int, state string) {
 				name = trimPrefixIndex(name)
 			}
 
+			labels := fmt.Sprint(issue.Labels)
+			if checkTrim(name) {
+				labels = trimPrefixIndex(labels)
+			}
+
 			titleCount := titleCount + ((utf8.RuneCountInString(title) - len(title)) / 2)
 			nameCount := nameCount + ((utf8.RuneCountInString(name) - len(name)) / 2)
-			t := fmt.Sprintf("[blue]#%%-4d %%-7s [white]%%-%ds [green]%%-%ds [white]%%-33s / %%-33s", titleCount, nameCount)
+			labelCount := labelCount + ((utf8.RuneCountInString(labels) - len(labels)) / 2)
+			t := fmt.Sprintf("[blue]#%%-4d %%-7s [white]%%-%ds [green]%%-%ds [red]%%-%ds [white]%%-33s / %%-33s", titleCount, nameCount, labelCount)
 
 			fmt.Println(color.Color(fmt.Sprintf(t,
 				issue.LocalID,
 				issue.State,
 				title,
 				name,
+				labels,
 				issue.CreatedAt,
 				issue.UpdatedAt)))
 		}
