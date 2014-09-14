@@ -55,14 +55,13 @@ func doCreateIssue(c *cli.Context) {
 	}
 
 	values := url.Values{
-		//		"id":           {"1"},
 		"title":       {c.String("t")},
 		"description": {c.String("d")},
 		"assignee_id": {strconv.Itoa(user.ID)},
 		//		"milestone_id": {"1"},
 		"labels": {c.String("l")},
 	}
-	res, err := gitLab.PostIssue(gitLab.currentProjectID, values)
+	res, err := gitLab.CreateIssue(gitLab.currentProjectID, values)
 	if err != nil {
 		log.Fatal("project issue create error ", err)
 	}
@@ -157,11 +156,11 @@ func main() {
 		{
 			Name:      "add_issue",
 			ShortName: "add",
-			Usage:     "project create issue",
+			Usage:     "Creates a new project issue.",
 			Flags: []cli.Flag{
-				cli.StringFlag{"title, t", "", "issue title.", ""},
-				cli.StringFlag{"description, d", "", "issue description.", ""},
-				cli.StringFlag{"label, l", "", "label example hoge,fuga,piyo.", ""},
+				cli.StringFlag{"title, t",       "", "(required) - The title of an issue", ""},
+				cli.StringFlag{"description, d", "", "(optional) - The description of an issue", ""},
+				cli.StringFlag{"label, l",       "", "(optional) - Comma-separated label names for an issue", ""},
 			},
 			Action: doCreateIssue,
 		},
@@ -174,19 +173,19 @@ func main() {
 		{
 			Name:      "list-issue",
 			ShortName: "list",
-			Usage:     "list project issue",
+			Usage:     "Get a list of project issues.",
 			Action:    doListIssue,
 			Flags: []cli.Flag{
-				cli.StringFlag{"state, s", "", "state condition", ""},
+				cli.StringFlag{"state, s", "", "(optional) - The state event of an issue ('close' to close issue and 'reopen' to reopen it)", ""},
 			},
 		},
 		{
 			Name:      "issue",
 			ShortName: "",
-			Usage:     "show project issue",
+			Usage:     "Gets a single project issue.",
 			Action:    doShowIssue,
 			Flags: []cli.Flag{
-				cli.IntFlag{"issue-id, id", 0, "show issue_id", ""},
+				cli.IntFlag{"issue-id, id", 0, "(required) - The ID of a project issue", ""},
 			},
 		},
 		{

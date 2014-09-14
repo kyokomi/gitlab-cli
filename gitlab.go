@@ -78,7 +78,7 @@ func (gitLab *gitLabCli) GetMilestoneTitle(projectID, milestoneID int) (string, 
 	return milestone.Title, nil
 }
 
-func (gitLab *gitLabCli) PostIssue(projectID int, values url.Values) ([]byte, error) {
+func (gitLab *gitLabCli) CreateIssue(projectID int, values url.Values) ([]byte, error) {
 	reader := strings.NewReader(values.Encode())
 	data, err := ioutil.ReadAll(reader)
 	if err != nil {
