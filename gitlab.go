@@ -23,9 +23,28 @@ const (
 	outTitleReplaceText = " ..."
 )
 
-type templateExec struct {
+type IssueDetailTemplate struct {
+	*template.Template
 	Issue *gogitlab.Issue
 	Notes []*gogitlab.Note
+}
+
+func NewIssueDetailTemplate(issue *gogitlab.Issue, notes []*gogitlab.Note) *IssueDetailTemplate {
+	return &IssueDetailTemplate{
+		Template: template.Must(template.New("issueDetail").Parse(issueDetailTemplate)),
+		Issue: issue,
+		Notes: notes,
+	}
+}
+
+func (t *IssueDetailTemplate) Print() error {
+	var buf bytes.Buffer
+	if err := t.Execute(&buf, t); err != nil {
+		return err
+	}
+	fmt.Println(color.Color(buf.String()))
+
+	return nil
 }
 
 const issueDetailTemplate = `
@@ -228,12 +247,7 @@ func (gitLab *gitLabCli) PrintIssueDetail(projectID, issueID int) error {
 		return err
 	}
 
-	t := template.Must(template.New("issueDetail").Parse(issueDetailTemplate))
-	var buf bytes.Buffer
-	if err := t.Execute(&buf, templateExec{Issue: issue, Notes: notes}); err != nil {
-		return err
-	}
-	fmt.Println(color.Color(buf.String()))
+	NewIssueDetailTemplate(issue, notes).Print()
 
 	return nil
 }
