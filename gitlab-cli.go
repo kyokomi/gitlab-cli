@@ -68,6 +68,32 @@ func doCreateIssue(c *cli.Context) {
 	fmt.Println("done. ", string(res))
 }
 
+// issue edit task.
+func doEditIssue(c *cli.Context) {
+	gitLab, err := newGitLabCli(c.GlobalBool("skip-cert-check"))
+	if err != nil {
+		log.Fatal("error create gitlab ")
+	}
+
+	values := url.Values{}
+	if t := c.String("t"); t != "" {
+		values.Set("title", t)
+	}
+	if d := c.String("d"); d != "" {
+		values.Set("description", d)
+	}
+	if l := c.String("l"); l != "" {
+		values.Set("labels", l)
+	}
+
+	issueID := c.Int("issue-id")
+	res, err := gitLab.EditIssue(gitLab.currentProjectID, issueID, values)
+	if err != nil {
+		log.Fatal("project issue create error ", err)
+	}
+	fmt.Println("done. ", string(res))
+}
+
 // project check task.
 func doCheckProject(_ *cli.Context) {
 	projectName, err := GetCurrentDirProjectName()
@@ -163,6 +189,18 @@ func main() {
 				cli.StringFlag{"label, l",       "", "(optional) - Comma-separated label names for an issue", ""},
 			},
 			Action: doCreateIssue,
+		},
+		{
+			Name:      "edit_issue",
+			ShortName: "edit",
+			Usage:     "Updates an existing project issue.",
+			Flags: []cli.Flag{
+				cli.IntFlag{"issue-id, id",       0, "(required) - The ID of a project issue", ""},
+				cli.StringFlag{"title, t",       "", "(optional) - The title of an issue", ""},
+				cli.StringFlag{"description, d", "", "(optional) - The description of an issue", ""},
+				cli.StringFlag{"label, l",       "", "(optional) - Comma-separated label names for an issue", ""},
+			},
+			Action: doEditIssue,
 		},
 		{
 			Name:      "check-project",
