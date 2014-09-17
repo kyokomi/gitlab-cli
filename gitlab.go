@@ -132,6 +132,27 @@ func (gitLab *gitLabCli) EditIssue(projectID, issueID int, values url.Values) ([
 	return res, nil
 }
 
+func (gitLab *gitLabCli) AddIssuesNote(projectID, issueID int, values url.Values) ([]byte, error) {
+	reader := strings.NewReader(values.Encode())
+	data, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return nil, err
+	}
+
+	// localIssueID => issueID
+	issue := gitLab.findIssueByID(projectID, issueID)
+	if issue == nil {
+		return nil, fmt.Errorf("issue not found")
+	}
+
+	res, err := gitLab.CreateIssuesNote(projectID, issue.ID, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 func (gitLab *gitLabCli) PrintIssue(projectID int, state string) {
 	c := make(chan []*gogitlab.Issue)
 	go gitLab.findIssueState(c, projectID, func(issues []*gogitlab.Issue) bool {

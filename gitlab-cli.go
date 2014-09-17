@@ -94,6 +94,23 @@ func doEditIssue(c *cli.Context) {
 	fmt.Println("done. ", string(res))
 }
 
+func doCreateIssueNote(c *cli.Context) {
+	gitLab, err := newGitLabCli(c.GlobalBool("skip-cert-check"))
+	if err != nil {
+		log.Fatal("error create gitlab ")
+	}
+
+	values := url.Values{}
+	values.Set("body", c.String("message"))
+
+	issueID := c.Int("issue-id")
+	res, err := gitLab.AddIssuesNote(gitLab.currentProjectID, issueID, values)
+	if err != nil {
+		log.Fatal("project issue note create error ", err)
+	}
+	fmt.Println("done. ", string(res))
+}
+
 // project check task.
 func doCheckProject(_ *cli.Context) {
 	projectName, err := GetCurrentDirProjectName()
@@ -201,6 +218,16 @@ func main() {
 				cli.StringFlag{"label, l",       "", "(optional) - Comma-separated label names for an issue", ""},
 			},
 			Action: doEditIssue,
+		},
+		{
+			Name:      "comment",
+			ShortName: "",
+			Usage:     "Creates a new note to a single project issue.",
+			Flags: []cli.Flag{
+				cli.IntFlag{"issue-id, id",       0, "(required) - The ID of a project issue", ""},
+				cli.StringFlag{"message, m",     "", "(required) - The content of a note", ""},
+			},
+			Action: doCreateIssueNote,
 		},
 		{
 			Name:      "check-project",
